@@ -22,33 +22,29 @@ void changeBlankPos(int n) {
     {
     case 0:
         if (blankN == 0 || blankN == 1 || blankN == 2) {
-            printf("blankN : %d , up impossible\n", blankN);
             return;
         }
         movingDegree = -3;
         break;
     case 1:
         if (blankN == 2 || blankN == 5 || blankN == 8) {
-            printf("blankN : %d , right impossible\n", blankN);
             return;
         }
         movingDegree = 1;
         break;
     case 2:
         if (blankN == 6 || blankN == 7 || blankN == 8) {
-            printf("blankN : %d , down impossible\n", blankN);
             return;
         }
         movingDegree = 3;
         break;
     case 3:
         if (blankN == 0 || blankN == 3 || blankN == 6) {
-            printf("blankN : %d , left impossible\n", blankN);
             return;
         }
         movingDegree = -1;
+        break;
     }
-    printf("switch %d - %d \n", blankN, blankN + movingDegree);
     tmp = currentPos[blankN + movingDegree];
     currentPos[blankN + movingDegree] = currentPos[blankN];
     currentPos[blankN] = tmp;
@@ -59,10 +55,6 @@ void changeBlankPos(int n) {
     setObjectImage(puzzle[blankN], c);
     setObjectImage(puzzle[blankN + movingDegree], "Images/white.png");
     blankN += movingDegree;
-    hideObject(puzzle[blankN]);
-    hideObject(puzzle[blankN - movingDegree]);
-    showObject(puzzle[blankN]);
-    showObject(puzzle[blankN - movingDegree]);
     return;
 
 }
@@ -71,17 +63,13 @@ void shuffleImage() {
     //빈칸 랜덤으로 하나 설정
     srand((unsigned int)time(NULL));
     blankN = rand() % 9;
-    printf("fist blankN : %d\n", blankN);
     setObjectImage(puzzle[blankN], "Images/white.png");
 
     int n;
-    for (int i = 0; i < 1000; i++) {
+    for (int i = 0; i < 500; i++) {
         n = rand() % 4;
-        printf("%d ", n);
         changeBlankPos(n);
-
     }
-
 }
 
 void gameStart() {
@@ -98,6 +86,7 @@ void gameStart() {
     shuffleImage();
     setTimer(timer, 600.0f);
     startTimer(timer);
+    showTimer(timer);
 }
 
 void checkBlankAround(int n) {
@@ -135,6 +124,7 @@ void checkGameClear() {
     hideTimer();
     stopTimer(timer);
 
+    setObjectImage(startButton,"Images/restart.png");
     showObject(startButton);
 }
 
@@ -153,20 +143,13 @@ ObjectID createObject(const char* image, SceneID scene, int x, int y, bool shown
 
 
 void gameOver() {
-    //화면 초기화
-    for (int i = 0; i < 9; i++) {
-        string str = "Images/";
-        str += to_string(i + 1);
-        str += ".png";
-        const char* c = str.c_str();
-
-        puzzle[i] = createObject(c, scene, 340 + (i % 3) * 200, 475 - 200 * (i / 3));
-    }
+    hideTimer();
     stopTimer(timer);
+    setObjectImage(startButton, "Images/restart.png");
+    hideObject(startButton);
     showObject(startButton);
 
     showMessage("10분 안에 클리어 실패");
-
 }
 
 void mouseCallback(ObjectID object, int x, int y, MouseAction action) {
@@ -229,13 +212,13 @@ int main() {
         const char* c = str.c_str();
 
         puzzle[i] = createObject(c, scene, 340 + (i % 3) * 200, 475 - 200 * (i / 3));
+        currentPos[i] = i;
     }
 
     startButton = createObject("Images/start.png", scene, 550, 70);
     scaleObject(startButton, 1.5f);
 
     timer = createTimer(600.f);
-    showTimer(timer);
 
     startGame(scene);
 }
